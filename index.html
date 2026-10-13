@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<meta charset="utf-8">
+<title>Aizu Weekend, Nov 21-23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: single reading column, sticky day tabs, each day is a vertical time rail. Palette from Aizu-momen indigo cotton and late-autumn persimmon. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1d2438;
+  --muted: #5d6478;
+  --line: #dde0e8;
+  --indigo: #2b3a67;
+  --persimmon: #d2601a;
+  --persimmon-soft: #fbeadf;
+  --indigo-soft: #e7eaf3;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141826; --surface: #1c2133; --ink: #e8eaf2; --muted: #a2a8bc; --line: #2e3550;
+    --indigo: #a9b7e6; --persimmon: #f08a4b; --persimmon-soft: #3a2619; --indigo-soft: #242b44;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141826; --surface: #1c2133; --ink: #e8eaf2; --muted: #a2a8bc; --line: #2e3550;
+  --indigo: #a9b7e6; --persimmon: #f08a4b; --persimmon-soft: #3a2619; --indigo-soft: #242b44;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+a { color: var(--indigo); }
+.jp { color: var(--muted); font-size: 0.85em; font-weight: 400; margin-left: 0.35em; }
+
+/* Header */
+header { padding-block: 40px 20px; display: grid; gap: 12px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--persimmon); font-weight: 700; }
+h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; color: var(--indigo); }
+.sub { color: var(--muted); margin: 0; max-width: 60ch; }
+
+/* Route strip */
+.route {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px;
+  margin-top: 8px; font-size: 13px;
+}
+.route span.stop { background: var(--indigo-soft); color: var(--indigo); padding: 3px 10px; border-radius: 999px; font-weight: 500; }
+.route span.arrow { color: var(--muted); }
+
+/* Sticky tabs */
+nav.days {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  display: flex; gap: 4px; overflow-x: auto;
+  padding-block: 10px;
+}
+nav.days a {
+  text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 6px; white-space: nowrap;
+}
+nav.days a:hover, nav.days a:focus-visible { background: var(--indigo-soft); color: var(--indigo); outline: none; }
+
+section { padding-top: 36px; scroll-margin-top: 56px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+h2 { font-size: 24px; font-weight: 800; }
+.daydate { font-size: 13px; color: var(--persimmon); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.stay { font-size: 13px; color: var(--muted); }
+.stay b { color: var(--ink); font-weight: 500; }
+
+/* Checklists */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+.checks label:hover { background: var(--indigo-soft); }
+.checks input { margin-top: 4px; accent-color: var(--persimmon); width: 16px; height: 16px; flex: none; }
+.checks input:checked + span { color: var(--muted); text-decoration: line-through; }
+.checks .hint { display: block; font-size: 12.5px; color: var(--muted); }
+.checks input:checked + span .hint { text-decoration: none; }
+.checks .where { display: block; font-size: 12.5px; color: var(--persimmon); font-weight: 500; }
+.checks input:checked + span .where { text-decoration: none; color: var(--muted); }
+.progress { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Timeline */
+.rail { list-style: none; margin: 0; padding: 0; position: relative; }
+.rail::before { content: ""; position: absolute; left: 66px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.stop-item { display: grid; grid-template-columns: 56px 1fr; column-gap: 22px; padding-block: 10px; position: relative; }
+.stop-item::after {
+  content: ""; position: absolute; left: 61px; top: 17px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--indigo);
+}
+.stop-item.drive::after { border-color: var(--line); background: var(--line); width: 8px; height: 8px; left: 63px; top: 19px; }
+.stop-item.key::after { background: var(--persimmon); border-color: var(--persimmon); }
+.when { font-size: 12.5px; color: var(--muted); text-align: right; padding-top: 3px; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.what { min-width: 0; }
+.what h3 { font-family: var(--font-body); font-size: 16px; font-weight: 700; }
+.what p { margin: 2px 0 0; color: var(--muted); }
+.what ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.what ul li { margin-block: 2px; }
+.what ul b { color: var(--ink); font-weight: 500; }
+.drive .what p { font-size: 13px; font-style: italic; margin: 0; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 8px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; }
+.tag.opt { background: var(--indigo-soft); color: var(--indigo); }
+.tag.must { background: var(--persimmon-soft); color: var(--persimmon); }
+
+/* Stay table */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.stay-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+.stay-table th { text-align: left; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.stay-table td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.stay-table tr:last-child td { border-bottom: 0; }
+.stay-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stay-table tr.pick td { background: var(--persimmon-soft); }
+.stay-table tr.pick td:first-child a { font-weight: 700; }
+.fine { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+
+/* Izakaya crawl */
+.crawl { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.crawl li { display: grid; grid-template-columns: 52px 1fr; gap: 10px; }
+.crawl li > div { min-width: 0; color: var(--ink); }
+.crawl .t { font-size: 12.5px; font-weight: 700; color: var(--persimmon); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.crawl .hint { display: block; color: var(--muted); font-size: 13.5px; }
+.crawl b { font-weight: 700; }
+
+/* Eat grid */
+.eat { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 24px; }
+
+/* Notes */
+.notes { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.notes li { padding-left: 16px; position: relative; color: var(--muted); }
+.notes li::before { content: ""; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; background: var(--persimmon); border-radius: 1px; }
+.notes b { color: var(--ink); font-weight: 500; }
+
+
+/* Language toggle */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lang-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--surface); }
+.lang-toggle button { font: inherit; font-size: 12.5px; font-weight: 500; border: 0; background: transparent; color: var(--muted); padding: 4px 12px; border-radius: 999px; cursor: pointer; }
+.lang-toggle button[aria-pressed="true"] { background: var(--indigo); color: var(--surface); }
+.wrap[hidden] { display: none; }
+.wrap:lang(ja) { line-height: 1.75; }
+.wrap:lang(ja) .eyebrow, .wrap:lang(ja) .daydate { letter-spacing: 0.04em; }
+
+@media (max-width: 480px) {
+  .rail::before { left: 52px; }
+  .stop-item { grid-template-columns: 44px 1fr; column-gap: 20px; }
+  .stop-item::after { left: 47px; }
+  .stop-item.drive::after { left: 49px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap" lang="en">
+  <header>
+    <div class="top">
+      <div class="eyebrow">Fukushima · Sat 21 to Mon 23 Nov 2026</div>
+      <div class="lang-toggle" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ja">日本語</button></div>
+    </div>
+    <h1>Aizu Weekend</h1>
+    <p class="sub">Three days by shinkansen and rental car: sake breweries in Bange, an izakaya night in Aizuwakamatsu, an onsen ryokan in the gorge, and Ouchi-juku on the way home. Mon 23 is Labour Thanksgiving Day, so expect holiday crowds.</p>
+    <div class="route" aria-label="Route">
+      <span class="stop">Tokyo</span><span class="arrow">→</span>
+      <span class="stop">Fukushima</span><span class="arrow">→</span>
+      <span class="stop">Aizubange</span><span class="arrow">→</span>
+      <span class="stop">Aizuwakamatsu</span><span class="arrow">→</span>
+      <span class="stop">Ashinomaki Onsen</span><span class="arrow">→</span>
+      <span class="stop">Ouchi-juku</span><span class="arrow">→</span>
+      <span class="stop">Fukushima</span><span class="arrow">→</span>
+      <span class="stop">Tokyo</span>
+    </div>
+  </header>
+
+  <nav class="days" aria-label="Jump to">
+    <a href="#book">To book</a>
+    <a href="#sat">Sat 21</a>
+    <a href="#sun">Sun 22</a>
+    <a href="#mon">Mon 23</a>
+    <a href="#eat">Eat &amp; drink</a>
+    <a href="#notes">Notes</a>
+  </nav>
+
+  <section id="book">
+    <div class="section-head">
+      <h2>Before you go</h2>
+      <span class="progress" data-for="book"></span>
+    </div>
+    <div class="panel">
+      <ul class="checks" data-group="book">
+        <li><label><input type="checkbox" data-k="b-shin-out"><span>Shinkansen Tokyo → Fukushima, Sat 21 morning<span class="hint">Reserved seats. About 1.5 hrs.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-shin-back"><span>Shinkansen Fukushima → Tokyo, Mon 23, ~17:00<span class="hint">Holiday return, book this one early.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-car"><span>Rental car, pick up and drop off at Fukushima Station<span class="hint">Ask for winter (studless) tyres. Aizu can see first snow in late November.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-hotel-sat"><span>Aizuwakamatsu Washington Hotel, Sat 21<span class="hint">Book on <a href="https://ph.trip.com/hotels/detail/?cityEnName=Aizuwakamatsu&amp;cityId=92465&amp;hotelId=704791&amp;checkIn=2026-11-21&amp;checkOut=2026-11-22&amp;adult=2&amp;children=0&amp;crn=1&amp;curr=AUD&amp;barcurr=AUD&amp;locale=en-PH">Trip.com</a>. About 20 min walk to the izakaya area.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-marumine"><span>Marumine Kanko Hotel, Sun 22<span class="hint">About A$335 for 2 people on Booking.com. Make sure the plan includes dinner (buffet in the main building, kaiseki in the Kawaoto annex).</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-izakaya"><span>Reserve Sat night izakaya<span class="hint">At least Kagota (0242-32-5380). Bangeya: 0242-32-9112.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-suehiro"><span>Suehiro Sake Brewery tour<span class="hint">Sun ~14:30. Call 0242-27-0002 to check whether you need to book.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-tsuruga"><span>Confirm Tsuruga address for Sun lunch<span class="hint">Listings disagree on whether it moved. 0242-29-4829. Closed Mondays.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-misawaya"><span>Misawaya, Mon 23 (optional reservation)<span class="hint">May take bookings up to the day before: 0241-68-2927.</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-cash"><span>Bring cash<span class="hint">Small restaurants and Ouchi-juku stalls may not take cards.</span></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="sat">
+    <div class="section-head">
+      <div>
+        <div class="daydate">Saturday 21 Nov</div>
+        <h2>Fukushima to Bange to Aizuwakamatsu</h2>
+      </div>
+      <div class="stay">Night: <b>Aizuwakamatsu</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">11:00</div><div class="what">
+        <h3>Arrive Fukushima, pick up car</h3>
+        <p>Shinkansen from Tokyo is about 1.5 hrs. Collect the rental at the station.</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>About 1 hr to Inawashiro on the Ban-etsu expressway</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">~12:15</div><div class="what">
+        <h3>Lunch at Lake Inawashiro <span class="jp">猪苗代</span></h3>
+        <ul>
+          <li><b>Wakaki Shokudo</b> <span class="jp">若喜食堂</span>: famous for a huge sauce katsudon. Near Inawashiro Station.</li>
+          <li><b>Inawashiro Ji-Beer brewhouse</b> <span class="jp">猪苗代地ビール館</span>: five craft beers, open 11:00 to 17:00. Passengers only.</li>
+          <li>Quick look at the lake with Mt. Bandai behind. Swans start arriving in November.</li>
+          <li>Backup: Michi-no-eki Inawashiro roadside station (katsudon, soft-serve, local produce), 9:00 to 18:00.</li>
+        </ul>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>About 40 min to Aizubange</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">~13:45</div><div class="what">
+        <h3>Aizubange <span class="jp">会津坂下</span></h3>
+        <p>Said to be the birthplace of Aizu-style basashi.</p>
+        <ul>
+          <li><b>Hiroki Sake Brewery Honten</b> <span class="jp">廣木酒造本店</span>. Hiroki is very hard to buy, so don't count on bottles.</li>
+          <li><b>Bange Drive-In</b> <span class="jp">堀ドライブイン</span>: cheap basashi on Route 49. Hours aren't online, so call ahead: 0242-83-3027.</li>
+          <li><b>Aizu Beko no Gyu</b> ice cream</li>
+          <li><b>Tachiki Kannon</b> <span class="jp">立木観音 (恵隆寺)</span>: an 8.5 m thousand-armed Kannon carved from a single standing tree. Hug the pillar in the hall for luck.</li>
+          <li><b>Akebono Sake Brewery</b> <span class="jp">曙酒造</span>: a second Bange brewery if Hiroki has nothing to sell. Check whether the shop is open.</li>
+          <li><b>Shokudo Ishiyama</b> <span class="jp">食堂いしやま</span><span class="tag opt">Snack</span>: where Bange's chilled ramen (hiyashi ramen) started. Served year-round, if you have room after lunch.</li>
+          <li><b>Aizu Takasagoya</b> <span class="jp">会津高砂屋</span>: local soy sauce and miso maker, good for souvenirs.</li>
+        </ul>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>About 20 min to Aizuwakamatsu</p>
+      </div></li>
+      <li class="stop-item"><div class="when">~16:30</div><div class="what">
+        <h3>Check in: Aizuwakamatsu Washington Hotel <span class="jp">会津若松ワシントンホテル</span></h3>
+        <p><a href="https://ph.trip.com/hotels/detail/?cityEnName=Aizuwakamatsu&amp;cityId=92465&amp;hotelId=704791&amp;checkIn=2026-11-21&amp;checkOut=2026-11-22&amp;adult=2&amp;children=0&amp;crn=1&amp;curr=AUD&amp;barcurr=AUD&amp;locale=en-PH">View the Trip.com listing</a></p>
+        <p>Near Aizuwakamatsu Station, about 20 min walk to Sakaemachi, the izakaya area. Park the car for the night. Japan's drink-driving limit is effectively zero.</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">Evening</div><div class="what">
+        <h3>Izakaya hopping in Sakaemachi <span class="jp">栄町</span></h3>
+        <p>About 20 min walk (or a short taxi) south from the hotel. Ordered so the earliest deadlines come first. Most of these close on Sundays, so Saturday is the night. Book Kagota.</p>
+        <ol class="crawl">
+          <li><span class="t">17:00</span><div><b>Bangeya</b> <span class="jp">居酒屋ばんげや</span> · Sakaemachi 1-38<span class="hint">Thick-cut Bange basashi and sakura liver sashimi. The ¥2,000 drinks set (drink + main + side) only runs until 20:00, so start here. Open to 22:30.</span></div></li>
+          <li><span class="t">~18:45</span><div><b>Kagota</b> <span class="jp">籠太</span> · Sakaemachi 8-49<span class="hint">Aizu home cooking and local sake. Food last order 21:00, closes 22:00, so this has to be second. Popular: reserve on 0242-32-5380.</span></div></li>
+          <li><span class="t">~20:30</span><div><b>Aizukko</b> <span class="jp">彩喰彩酒 會津っこ</span> · Sakaemachi 4-49<span class="hint">Aizu sake and Aizu jidori chicken karaage. Open from 17:00 to 22:00 or 23:00 (listings differ), so check last order before you go: 0242-32-6232.</span></div></li>
+          <li><span class="t">~22:00</span><div><b>the bar cozy</b> · Sakaemachi 8-19<span class="hint">Late bar near Kagota, open until 27:00 (3am) on Saturdays. Easy last stop.</span></div></li>
+          <li><span class="t">Alt.</span><div><b>Mugitoro</b> <span class="jp">麦とろ</span> · Sakaemachi 4-9<span class="hint">Old-style sake bar run by a friendly owner who brings out free extras (homemade umeboshi, fried manju). Basashi with spicy miso and fried tororo nori rolls. 18:00 to 23:30, closes on irregular days. Swap in for Aizukko, or go here after.</span></div></li>
+          <li><span class="t">Alt.</span><div><b>Aburaya</b> <span class="jp">あ舞らや</span> · Kamimachi 1-6<span class="hint">Bar running since 1984, open 19:00 to 25:00 (1am). Kamimachi is just north of Sakaemachi, so it's on your way back toward the hotel.</span></div></li>
+        </ol>
+        <p class="fine">Not in the route: <b>酒菜 天味</b> (I couldn't confirm where it is; one guide puts it about 10 min by car from the station) and <b>Mokkiri</b> <span class="jp">もっきり</span> (Babamachi 4-45, between the hotel and Sakaemachi, but it may only open weekdays). Check both on Google Maps if you want to add them.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="sun">
+    <div class="section-head">
+      <div>
+        <div class="daydate">Sunday 22 Nov</div>
+        <h2>Aizuwakamatsu, then the onsen</h2>
+      </div>
+      <div class="stay">Night: <b>Marumine Kanko Hotel</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">7:00</div><div class="what">
+        <h3>Kitakata morning ramen <span class="jp">喜多方 朝ラー</span><span class="tag opt">Optional</span></h3>
+        <p>About 30 min north. Soy broth, flat curly noodles. Back in Aizuwakamatsu by about 9:00. Skip it if Saturday night runs late.</p>
+        <ul>
+          <li><b>Bannai Shokudo</b> <span class="jp">坂内食堂</span>: opens 7:00. The classic, known for niku soba (ramen covered in chashu).</li>
+          <li><b>Makoto Shokudo</b> <span class="jp">まこと食堂</span>: opens 7:30. Can have a queue.</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">9:00</div><div class="what">
+        <h3>Tsuruga Castle <span class="jp">鶴ヶ城</span></h3>
+        <p>Open 8:30 to 17:00 every day. Castle museum and the view from the top floor. Combined ticket with Rinkaku is about ¥520. Allow 1.5 to 2 hrs. Free parking around the grounds fills later in the day.</p>
+        <ul>
+          <li><b>Rinkaku tea room</b> <span class="jp">麟閣</span>, in the castle grounds. Matcha and a wagashi for about ¥500 extra.</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">11:30</div><div class="what">
+        <h3>Lunch: Tsuruga Aizu Main Store <span class="jp">鶴我 会津本店</span></h3>
+        <p>Horse meat from an Aizu horse farm: red-meat sashimi, sakura nabe, eight-cut platter. Lunch 11:30 to 14:30 (last order 14:00), closed Mondays. One listing gives the address as Ekimae-machi 6-12, near the station, but another says it moved, so check the address before driving: 0242-29-4829.</p>
+      </div></li>
+      <li class="stop-item"><div class="when">13:00</div><div class="what">
+        <h3>Iimoriyama <span class="jp">飯盛山</span></h3>
+        <p>About 10 min east. Go in the early afternoon because Sazae-do closes at sunset (about 16:20 in late November).</p>
+        <ul>
+          <li><b>Sazae-do</b> <span class="jp">さざえ堂</span>: wooden spiral pagoda where the up and down paths never cross. ¥400.</li>
+          <li><b>Byakkotai graves</b> <span class="jp">白虎隊十九士の墓</span>, at the top of the hill. Stairs, or a ¥250 escalator (9:00 to 16:00 from Nov 21).</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">14:30</div><div class="what">
+        <h3>Suehiro Sake Brewery <span class="jp">末廣酒造 嘉永蔵</span></h3>
+        <p>Free tour, about 30 min, roughly hourly from 10:00 to 16:00, then tasting. The tour is in Japanese. Sources disagree on whether you need to book, so call ahead: 0242-27-0002. The café serves coffee made with the brewing water and sake cake. Tasting is for passengers only.</p>
+      </div></li>
+      <li class="stop-item"><div class="when">15:30</div><div class="what">
+        <h3>Nanokamachi street <span class="jp">七日町通り</span></h3>
+        <p>A short walk from Suehiro, so park once for both. Old storehouses and Taisho-era shopfronts with lacquerware, Aizu cotton and sweets. Good place to buy souvenirs and persimmons.</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>About 25 min south into the gorge. Leave by about 16:30 to arrive before dark.</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">~17:00</div><div class="what">
+        <h3>Marumine Kanko Hotel <span class="jp">丸峰観光ホテル</span></h3>
+        <p>Ashinomaki Onsen <span class="jp">芦ノ牧温泉</span>. Riverside baths. Check-in from 15:00, check-out by 10:00. The main building has served a buffet dinner since 2024, while the Kawaoto annex does kaiseki, so check which one your booking includes.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="mon">
+    <div class="section-head">
+      <div>
+        <div class="daydate">Monday 23 Nov · Public holiday</div>
+        <h2>Ouchi-juku, then home</h2>
+      </div>
+      <div class="stay">Train: <b>~17:00 from Fukushima</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">8:45</div><div class="what">
+        <h3>Check out after breakfast</h3>
+        <p>Skip a big breakfast if you want room for soba.</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>About 25 min to Ouchi-juku. Get there before the holiday crowds and tour buses.</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">9:15</div><div class="what">
+        <h3>Ouchi-juku <span class="jp">大内宿</span><span class="tag must">Go early</span></h3>
+        <p>Edo-era post town lined with thatched roofs. Walk to the shrine steps at the far end for the classic view down the street.</p>
+        <ul>
+          <li><b>Misawaya</b> <span class="jp">三澤屋</span>: negi soba (takato soba, about ¥1,320), eaten with a whole leek instead of chopsticks. Opens 9:30, closed Thursdays. Write your name on the list as soon as you arrive. One review says they take reservations up to the day before: 0241-68-2927.</li>
+          <li>Street snacks: tochi-mochi and shingoro (rice grilled with sweet miso).</li>
+        </ul>
+      </div></li>
+      <li class="stop-item"><div class="when">11:15</div><div class="what">
+        <h3>Tou-no-Hetsuri <span class="jp">塔のへつり</span></h3>
+        <p>Eroded rock towers over the river, about 15 min from Ouchi-juku. A short walk over the suspension bridge, 30 to 45 min.</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when">12:00</div><div class="what">
+        <p>About 2 hrs to Fukushima. Leave room for holiday traffic, and refuel before returning the car.</p>
+      </div></li>
+      <li class="stop-item"><div class="when">~14:00</div><div class="what">
+        <h3>Enban gyoza <span class="jp">円盤餃子</span><span class="tag opt">If time</span></h3>
+        <p>Gyoza fried in a round pan and served as one big disc. Both are close to Fukushima Station. Only worth it if you reach Fukushima by about 14:00, since both stop lunch early or sell out.</p>
+        <ul>
+          <li><b>Manpuku</b> <span class="jp">満腹</span> · Naka-machi 1-24: the original. Weekends and holidays from 11:40 until sold out.</li>
+          <li><b>Gyoza Terui East Exit</b> <span class="jp">餃子 照井 東口店</span> · Sakae-machi 1-1: lunch until 14:15 last order.</li>
+        </ul>
+      </div></li>
+      <li class="stop-item"><div class="when">~16:00</div><div class="what">
+        <h3>Return car, shinkansen to Tokyo at ~17:00</h3>
+        <p>Pick up Mamador and other souvenirs at the station.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="eat">
+    <div class="section-head">
+      <h2>Eat &amp; drink list</h2>
+      <span class="progress" data-for="eat"></span>
+    </div>
+    <div class="panel">
+      <ul class="checks eat" data-group="eat">
+        <li><label><input type="checkbox" data-k="e-basashi"><span>Basashi <span class="jp">馬刺し</span><span class="hint">Horse sashimi, Aizu style, with spicy miso</span><span class="where">Sat: Bange Drive-In, Bangeya, Mugitoro. Sun: Tsuruga</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-katsudon"><span>Sauce katsudon <span class="jp">ソースカツ丼</span><span class="hint">Sweet sauce, no egg</span><span class="where">Sat: Wakaki Shokudo, or Michi-no-eki Inawashiro</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-kozuyu"><span>Kozuyu <span class="jp">こづゆ</span><span class="hint">Dried-scallop dashi soup</span><span class="where">Ask at Kagota (Sat) or Tsuruga (Sun), both do Aizu home cooking</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-wappa"><span>Wappa-meshi <span class="jp">わっぱ飯</span><span class="hint">Rice steamed in a bentwood box</span><span class="where">Takino 田季野, Sakaemachi 5-31, 11:00 to 20:00. In the izakaya area, so it works as an early Sat stop</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-ramen"><span>Kitakata ramen <span class="jp">喜多方ラーメン</span><span class="hint">Ideally as asa-ra, for breakfast</span><span class="where">Sun (optional): Bannai Shokudo 7:00, Makoto Shokudo 7:30</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-hiyashi"><span>Hiyashi ramen <span class="jp">冷やしラーメン</span><span class="hint">Chilled ramen, a Bange original</span><span class="where">Sat: Shokudo Ishiyama, Aizubange</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-negisoba"><span>Negi soba <span class="jp">ねぎそば</span><span class="hint">Eaten with a whole leek</span><span class="where">Mon: Misawaya, Ouchi-juku</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-tochi"><span>Tochi-mochi <span class="jp">栃餅</span><span class="hint">Horse-chestnut rice cakes</span><span class="where">Mon: Ouchi-juku street stalls</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-shingoro"><span>Shingoro <span class="jp">しんごろう</span><span class="hint">Grilled rice, sweet miso</span><span class="where">Mon: Ouchi-juku street stalls</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-gelato"><span>Aizu Beko no Gyu ice cream<span class="hint">Local soft-serve</span><span class="where">Sat: Aizubange</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-kaki"><span>Mishirazu-gaki <span class="jp">身不知柿</span><span class="hint">Aizu persimmons, in season in Nov</span><span class="where">Sun: Nanokamachi shops. Also roadside stations</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-gyoza"><span>Enban gyoza <span class="jp">円盤餃子</span><span class="hint">Round plate of gyoza, Fukushima city</span><span class="where">Mon: Manpuku or Gyoza Terui East Exit, by ~14:00</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-mamador"><span>Mamador <span class="jp">ままどおる</span><span class="hint">Classic Fukushima souvenir sweet</span><span class="where">Mon: Fukushima Station shops</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-matcha"><span>Matcha and wagashi <span class="jp">抹茶</span><span class="hint">In a historic tea house</span><span class="where">Sun: Rinkaku, Tsuruga Castle</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-sake"><span>Aizu sake<span class="hint">Hiroki, Sharaku, Aizu Musume, Suehiro</span><span class="where">Sat: Hiroki and Akebono in Bange, then the izakaya. Sun: Suehiro tasting</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-beer"><span>Inawashiro craft beer <span class="jp">猪苗代地ビール</span><span class="hint">Five house beers</span><span class="where">Sat: Inawashiro Ji-Beer brewhouse (passengers only)</span></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="notes">
+    <div class="section-head"><h2>Notes</h2></div>
+    <ul class="notes">
+      <li><b>Weather.</b> Late November in Aizu is cold and can bring the first snow. Pack warm layers.</li>
+      <li><b>Holiday weekend.</b> Mon 23 is a public holiday. Ouchi-juku, the expressway home and the return shinkansen will all be busier than usual.</li>
+      <li><b>Driving.</b> Plan the car around drinking. Saturday night is a walk-everywhere night in Aizuwakamatsu.</li>
+      <li><b>Hiroki.</b> One of the hardest sake labels in Japan to buy. Drinking it at an Aizu bar is the easier route.</li>
+    </ul>
+  </section>
+</div>
+
+
+<div class="wrap" lang="ja" hidden>
+  <header>
+    <div class="top">
+      <div class="eyebrow">福島・2026年11月21日（土）〜23日（月・祝）</div>
+      <div class="lang-toggle" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ja">日本語</button></div>
+    </div>
+    <h1>会津の週末</h1>
+    <p class="sub">新幹線とレンタカーで巡る3日間。坂下の酒蔵、会津若松の居酒屋はしご、渓谷の温泉宿、そして帰りに大内宿。23日は勤労感謝の日なので、どこも混雑に注意。</p>
+    <div class="route" aria-label="ルート">
+      <span class="stop">東京</span><span class="arrow">→</span>
+      <span class="stop">福島</span><span class="arrow">→</span>
+      <span class="stop">会津坂下</span><span class="arrow">→</span>
+      <span class="stop">会津若松</span><span class="arrow">→</span>
+      <span class="stop">芦ノ牧温泉</span><span class="arrow">→</span>
+      <span class="stop">大内宿</span><span class="arrow">→</span>
+      <span class="stop">福島</span><span class="arrow">→</span>
+      <span class="stop">東京</span>
+    </div>
+  </header>
+
+  <nav class="days" aria-label="移動">
+    <a href="#book-ja">予約</a>
+    <a href="#sat-ja">21日（土）</a>
+    <a href="#sun-ja">22日（日）</a>
+    <a href="#mon-ja">23日（月）</a>
+    <a href="#eat-ja">食べ物・お酒</a>
+    <a href="#notes-ja">メモ</a>
+  </nav>
+
+  <section id="book-ja">
+    <div class="section-head">
+      <h2>出発前に</h2>
+      <span class="progress" data-for="book"></span>
+    </div>
+    <div class="panel">
+      <ul class="checks" data-group="book">
+        <li><label><input type="checkbox" data-k="b-shin-out"><span>新幹線 東京→福島、21日（土）朝<span class="hint">指定席。約1時間半。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-shin-back"><span>新幹線 福島→東京、23日（月）17時ごろ<span class="hint">祝日の帰りは混むので早めに予約。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-car"><span>レンタカー（福島駅で貸出・返却）<span class="hint">スタッドレスタイヤを頼む。会津は11月下旬に初雪の可能性あり。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-hotel-sat"><span>会津若松ワシントンホテル、21日（土）<span class="hint"><a href="https://ph.trip.com/hotels/detail/?cityEnName=Aizuwakamatsu&amp;cityId=92465&amp;hotelId=704791&amp;checkIn=2026-11-21&amp;checkOut=2026-11-22&amp;adult=2&amp;children=0&amp;crn=1&amp;curr=AUD&amp;barcurr=AUD&amp;locale=en-PH">Trip.com</a>で予約。居酒屋街まで徒歩約20分。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-marumine"><span>丸峰観光ホテル、22日（日）<span class="hint">Booking.comで2名約335豪ドル。夕食付きのプランか確認（本館はビュッフェ、別館「川音」は会席）。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-izakaya"><span>土曜の居酒屋を予約<span class="hint">最低でも籠太（0242-32-5380）。ばんげや：0242-32-9112。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-suehiro"><span>末廣酒造の見学<span class="hint">日曜14:30ごろ。予約が必要か 0242-27-0002 に確認。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-tsuruga"><span>鶴我の住所を確認（日曜ランチ）<span class="hint">移転したという情報あり。0242-29-4829。月曜定休。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-misawaya"><span>三澤屋、23日（月）（予約は任意）<span class="hint">前日まで予約できるという口コミあり：0241-68-2927。</span></span></label></li>
+        <li><label><input type="checkbox" data-k="b-cash"><span>現金を用意<span class="hint">小さなお店や大内宿の屋台はカードが使えないことも。</span></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="sat-ja">
+    <div class="section-head">
+      <div>
+        <div class="daydate">11月21日（土）</div>
+        <h2>福島から坂下、会津若松へ</h2>
+      </div>
+      <div class="stay">宿泊：<b>会津若松</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">11:00</div><div class="what">
+        <h3>福島着、レンタカー受け取り</h3>
+        <p>東京から新幹線で約1時間半。駅でレンタカーを受け取る。</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>磐越道で猪苗代まで約1時間</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">12:15頃</div><div class="what">
+        <h3>猪苗代湖でランチ</h3>
+        <ul>
+          <li><b>若喜食堂</b>：ボリューム満点のソースカツ丼が名物。猪苗代駅の近く。</li>
+          <li><b>猪苗代地ビール館</b>：クラフトビール5種、11:00〜17:00。運転しない人だけ。</li>
+          <li>磐梯山を背に湖をちょっと眺める。11月から白鳥が飛来し始める。</li>
+          <li>予備：道の駅猪苗代（ソースカツ丼、ソフトクリーム、地元の産品）、9:00〜18:00。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>会津坂下まで約40分</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">13:45頃</div><div class="what">
+        <h3>会津坂下</h3>
+        <p>会津の馬刺し発祥の地といわれる町。</p>
+        <ul>
+          <li><b>廣木酒造本店</b>：「飛露喜」はなかなか買えないので、期待しすぎないこと。</li>
+          <li><b>堀ドライブイン</b>：国道49号沿いの安くておいしい馬刺し。営業時間がネットに載っていないので事前に電話：0242-83-3027。</li>
+          <li><b>会津のべこの乳</b> のアイス</li>
+          <li><b>立木観音（恵隆寺）</b>：一本の立木から彫られた高さ8.5mの千手観音。お堂の柱を抱くとご利益があるとか。</li>
+          <li><b>曙酒造</b>：廣木で買えなかったときの坂下のもう一軒。売店が開いているか確認。</li>
+          <li><b>食堂いしやま</b><span class="tag opt">軽食</span>：坂下名物の冷やしラーメン発祥の店。通年で食べられるので、お腹に余裕があれば。</li>
+          <li><b>会津高砂屋</b>：地元の醤油・味噌の蔵元。お土産に。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>会津若松まで約20分</p>
+      </div></li>
+      <li class="stop-item"><div class="when">16:30頃</div><div class="what">
+        <h3>チェックイン：会津若松ワシントンホテル</h3>
+        <p><a href="https://ph.trip.com/hotels/detail/?cityEnName=Aizuwakamatsu&amp;cityId=92465&amp;hotelId=704791&amp;checkIn=2026-11-21&amp;checkOut=2026-11-22&amp;adult=2&amp;children=0&amp;crn=1&amp;curr=AUD&amp;barcurr=AUD&amp;locale=en-PH">Trip.comの掲載を見る</a></p>
+        <p>会津若松駅の近く。居酒屋街の栄町まで徒歩約20分。車は朝までここに置いて、夜は歩きで。</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">夜</div><div class="what">
+        <h3>栄町で居酒屋はしご</h3>
+        <p>ホテルから南へ徒歩約20分（タクシーならすぐ）。ラストオーダーが早い順に並べています。日曜休みの店が多いので、土曜の夜が勝負。籠太は予約を。</p>
+        <ol class="crawl">
+          <li><span class="t">17:00</span><div><b>居酒屋ばんげや</b>・栄町1-38<span class="hint">坂下の厚切り馬刺しと桜レバー刺し。2,000円のお得なセット（ドリンク＋メイン＋小鉢）は20時までなので、ここから。22:30まで。</span></div></li>
+          <li><span class="t">18:45頃</span><div><b>籠太</b>・栄町8-49<span class="hint">会津の家庭料理と地酒。フードLO 21:00、22:00閉店なので2軒目に。人気店なので予約を：0242-32-5380。</span></div></li>
+          <li><span class="t">20:30頃</span><div><b>彩喰彩酒 會津っこ</b>・栄町4-49<span class="hint">会津の地酒と会津地鶏の唐揚げ。17:00〜22:00または23:00（情報によって違う）なので、LOを確認：0242-32-6232。</span></div></li>
+          <li><span class="t">22:00頃</span><div><b>the bar cozy</b>・栄町8-19<span class="hint">籠太の近くのバー。土曜は27時（午前3時）まで。締めにちょうどいい。</span></div></li>
+          <li><span class="t">候補</span><div><b>麦とろ</b>・栄町4-9<span class="hint">気さくな店主が自家製の梅干しや揚げまんじゅうをサービスしてくれる昔ながらの酒場。辛味噌で食べる馬刺し、とろろ海苔巻きの揚げ。18:00〜23:30、不定休。會津っこの代わりか、その後に。</span></div></li>
+          <li><span class="t">候補</span><div><b>あ舞らや</b>・上町1-6<span class="hint">1984年から続くバー。19:00〜25:00。上町は栄町のすぐ北なので、ホテルへの帰り道。</span></div></li>
+        </ol>
+        <p class="fine">ルート外：<b>酒菜 天味</b>（場所を確認できず。駅から車で約10分という情報あり）、<b>もっきり</b>（馬場町4-45、ホテルと栄町の間だが平日のみ営業の可能性）。行きたければGoogleマップで確認を。</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="sun-ja">
+    <div class="section-head">
+      <div>
+        <div class="daydate">11月22日（日）</div>
+        <h2>会津若松を観光して温泉へ</h2>
+      </div>
+      <div class="stay">宿泊：<b>丸峰観光ホテル</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">7:00</div><div class="what">
+        <h3>喜多方で朝ラー<span class="tag opt">任意</span></h3>
+        <p>北へ約30分。醤油スープに平打ちの縮れ麺。9時ごろには会津若松に戻れる。土曜の夜が長引いたらパス。</p>
+        <ul>
+          <li><b>坂内食堂</b>：7:00開店。チャーシューたっぷりの肉そばが定番。</li>
+          <li><b>まこと食堂</b>：7:30開店。行列になることも。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">9:00</div><div class="what">
+        <h3>鶴ヶ城</h3>
+        <p>8:30〜17:00、年中無休。天守閣の博物館と最上階からの眺め。麟閣との共通券は約520円。所要1.5〜2時間。周辺の無料駐車場は遅い時間ほど混む。</p>
+        <ul>
+          <li><b>麟閣</b>：城内の茶室。抹茶とお菓子は追加で約500円。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">11:30</div><div class="what">
+        <h3>ランチ：鶴我 会津本店</h3>
+        <p>会津の牧場から届く馬肉。赤身刺し、桜鍋、桜八品盛り。ランチ11:30〜14:30（LO 14:00）、月曜定休。住所は駅前町6-12（駅の近く）という情報と、移転したという情報があるので、行く前に確認：0242-29-4829。</p>
+      </div></li>
+      <li class="stop-item"><div class="when">13:00</div><div class="what">
+        <h3>飯盛山</h3>
+        <p>東へ車で約10分。さざえ堂は日没（11月下旬は16:20ごろ）までなので、午後早めに。</p>
+        <ul>
+          <li><b>さざえ堂</b>：上りと下りの人がすれ違わない木造のらせん堂。400円。</li>
+          <li><b>白虎隊十九士の墓</b>：山の上。階段か、有料のスロープコンベア（250円、11/21から9:00〜16:00）。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item key"><div class="when">14:30</div><div class="what">
+        <h3>末廣酒造 嘉永蔵</h3>
+        <p>無料の蔵見学（約30分）、10:00〜16:00の間ほぼ1時間おき、そのあと試飲。予約が必要かは情報が分かれるので事前に電話：0242-27-0002。仕込み水で淹れたコーヒーや酒ケーキが楽しめるカフェもある。試飲は運転しない人だけ。</p>
+      </div></li>
+      <li class="stop-item"><div class="when">15:30</div><div class="what">
+        <h3>七日町通り</h3>
+        <p>末廣から歩いてすぐなので、車は一度停めれば両方回れる。蔵や大正時代の店構えが並び、漆器、会津木綿、お菓子のお店がある。お土産や柿を買うならここ。</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>南の渓谷へ約25分。暗くなる前に着くよう16:30ごろ出発。</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">17:00頃</div><div class="what">
+        <h3>丸峰観光ホテル</h3>
+        <p>芦ノ牧温泉。川沿いのお風呂。チェックイン15:00から、チェックアウト10:00まで。本館は2024年からビュッフェ、別館「川音」は会席なので、予約がどちらか確認を。</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="mon-ja">
+    <div class="section-head">
+      <div>
+        <div class="daydate">11月23日（月・祝）</div>
+        <h2>大内宿に寄って帰路へ</h2>
+      </div>
+      <div class="stay">帰り：<b>福島発 17:00頃</b></div>
+    </div>
+    <ol class="rail">
+      <li class="stop-item"><div class="when">8:45</div><div class="what">
+        <h3>朝食後にチェックアウト</h3>
+        <p>そばを食べるなら朝食は控えめに。</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when"></div><div class="what">
+        <p>大内宿まで約25分。祝日の人混みと観光バスより先に着きたい。</p>
+      </div></li>
+      <li class="stop-item key"><div class="when">9:15</div><div class="what">
+        <h3>大内宿<span class="tag must">早めに</span></h3>
+        <p>茅葺き屋根が並ぶ江戸時代の宿場町。突き当たりの石段を上った高台から通りを見下ろすのが定番の景色。</p>
+        <ul>
+          <li><b>三澤屋</b>：ネギ1本を箸代わりにして食べる高遠そば（約1,320円）。9:30開店、木曜定休。着いたらすぐ名前を書いておく。前日まで予約できるという口コミあり：0241-68-2927。</li>
+          <li>食べ歩き：栃餅としんごろう（甘い味噌を塗って焼いたごはん）。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item"><div class="when">11:15</div><div class="what">
+        <h3>塔のへつり</h3>
+        <p>大内宿から車で約15分。川沿いにそびえる奇岩。吊り橋を渡って30〜45分。</p>
+      </div></li>
+      <li class="stop-item drive"><div class="when">12:00</div><div class="what">
+        <p>福島まで約2時間。祝日の渋滞を見込んで、返却前に給油。</p>
+      </div></li>
+      <li class="stop-item"><div class="when">14:00頃</div><div class="what">
+        <h3>円盤餃子<span class="tag opt">時間があれば</span></h3>
+        <p>フライパンで丸く並べて焼き、円盤のまま出てくる餃子。どちらも福島駅の近く。昼の営業が早めに終わったり売り切れたりするので、14時ごろまでに福島に着けたら。</p>
+        <ul>
+          <li><b>満腹</b>・仲間町1-24：元祖。土日祝は11:40から売り切れまで。</li>
+          <li><b>餃子 照井 東口店</b>・栄町1-1：昼はLO 14:15。</li>
+        </ul>
+      </div></li>
+      <li class="stop-item"><div class="when">16:00頃</div><div class="what">
+        <h3>レンタカー返却、17時ごろの新幹線で東京へ</h3>
+        <p>駅でままどおるなどのお土産を。</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section id="eat-ja">
+    <div class="section-head">
+      <h2>食べたいもの・飲みたいもの</h2>
+      <span class="progress" data-for="eat"></span>
+    </div>
+    <div class="panel">
+      <ul class="checks eat" data-group="eat">
+        <li><label><input type="checkbox" data-k="e-basashi"><span>馬刺し<span class="hint">会津流は辛味噌で</span><span class="where">土：堀ドライブイン、ばんげや、麦とろ。日：鶴我</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-katsudon"><span>ソースカツ丼<span class="hint">甘めのソース、卵とじなし</span><span class="where">土：若喜食堂 または 道の駅猪苗代</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-kozuyu"><span>こづゆ<span class="hint">干し貝柱だしのお椀</span><span class="where">籠太（土）か鶴我（日）で聞いてみる。どちらも会津の郷土料理の店</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-wappa"><span>わっぱ飯<span class="hint">曲げわっぱで蒸したご飯</span><span class="where">田季野（栄町5-31、11:00〜20:00）。居酒屋街にあるので土曜の早い時間に</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-ramen"><span>喜多方ラーメン<span class="hint">できれば朝ラーで</span><span class="where">日（任意）：坂内食堂 7:00、まこと食堂 7:30</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-hiyashi"><span>冷やしラーメン<span class="hint">坂下発祥</span><span class="where">土：食堂いしやま（会津坂下）</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-negisoba"><span>ねぎそば<span class="hint">ネギ1本で食べる</span><span class="where">月：三澤屋（大内宿）</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-tochi"><span>栃餅<span class="hint">栃の実のお餅</span><span class="where">月：大内宿の屋台</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-shingoro"><span>しんごろう<span class="hint">甘い味噌を塗って焼いたごはん</span><span class="where">月：大内宿の屋台</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-gelato"><span>べこの乳アイス<span class="hint">地元のソフトクリーム</span><span class="where">土：会津坂下</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-kaki"><span>身不知柿<span class="hint">11月が旬の会津の柿</span><span class="where">日：七日町のお店。道の駅にも</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-gyoza"><span>円盤餃子<span class="hint">福島市の丸く焼いた餃子</span><span class="where">月：満腹 または 照井 東口店（14時ごろまでに）</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-mamador"><span>ままどおる<span class="hint">福島の定番土産</span><span class="where">月：福島駅のお土産店</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-matcha"><span>抹茶と和菓子<span class="hint">由緒ある茶室で</span><span class="where">日：麟閣（鶴ヶ城）</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-sake"><span>会津の地酒<span class="hint">飛露喜、寫樂、会津娘、末廣</span><span class="where">土：坂下の廣木と曙、夜の居酒屋。日：末廣で試飲</span></span></label></li>
+        <li><label><input type="checkbox" data-k="e-beer"><span>猪苗代のクラフトビール<span class="hint">自家製ビール5種</span><span class="where">土：猪苗代地ビール館（運転しない人だけ）</span></span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="notes-ja">
+    <div class="section-head"><h2>メモ</h2></div>
+    <ul class="notes">
+      <li><b>天気</b>：11月下旬の会津は寒く、初雪が降ることも。暖かい服装で。</li>
+      <li><b>連休</b>：23日は祝日。大内宿、帰りの高速道路、新幹線はいつもより混む。</li>
+      <li><b>運転</b>：お酒を飲む予定に合わせて運転担当を決めておく。土曜の夜は会津若松を歩いて回る。</li>
+      <li><b>飛露喜</b>：日本でも指折りの手に入りにくい銘柄。買うより会津の居酒屋で飲むほうが早い。</li>
+    </ul>
+  </section>
+</div>
+<script>
+(function () {
+  function get(k) { try { return localStorage.getItem("aizu:" + k); } catch (e) { return null; } }
+  function set(k, v) { try { localStorage.setItem("aizu:" + k, v); } catch (e) {} }
+  var words = {
+    en: { book: " done", eat: " tried", of: " of " },
+    ja: { book: "件完了", eat: "品制覇", unitBook: "件中", unitEat: "品中" }
+  };
+  function update(group) {
+    var list = document.querySelector('[data-group="' + group + '"]');
+    var boxes = list.querySelectorAll("input[type=checkbox]");
+    var done = 0;
+    boxes.forEach(function (b) { if (b.checked) done++; });
+    document.querySelectorAll('.progress[data-for="' + group + '"]').forEach(function (out) {
+      var lang = out.closest(".wrap").lang;
+      out.textContent = lang === "ja"
+        ? boxes.length + (group === "book" ? words.ja.unitBook : words.ja.unitEat) + done + words.ja[group]
+        : done + words.en.of + boxes.length + words.en[group];
+    });
+  }
+  ["book", "eat"].forEach(function (group) {
+    document.querySelectorAll('[data-group="' + group + '"] input[type=checkbox]').forEach(function (b) {
+      b.checked = get(b.dataset.k) === "1";
+      b.addEventListener("change", function () {
+        set(b.dataset.k, b.checked ? "1" : "0");
+        document.querySelectorAll('input[data-k="' + b.dataset.k + '"]').forEach(function (o) { o.checked = b.checked; });
+        update(group);
+      });
+    });
+    update(group);
+  });
+  function setLang(lang) {
+    document.querySelectorAll(".wrap[lang]").forEach(function (w) { w.hidden = w.lang !== lang; });
+    document.querySelectorAll(".lang-toggle button").forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.dataset.lang === lang ? "true" : "false");
+    });
+    document.documentElement.lang = lang;
+    document.title = lang === "ja" ? "会津の週末" : "Aizu Weekend, Nov 21-23";
+    set("lang", lang);
+  }
+  document.querySelectorAll(".lang-toggle button").forEach(function (btn) {
+    btn.addEventListener("click", function () { setLang(btn.dataset.lang); });
+  });
+  setLang(get("lang") === "ja" ? "ja" : "en");
+})();
+</script>
+</body></html>
